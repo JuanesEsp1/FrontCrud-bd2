@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import Swal from 'sweetalert2'
 
+
 const useProductos = () => {
 
   const [producto, setProducto] = useState([]);
@@ -16,18 +17,33 @@ const useProductos = () => {
     nombre: '',
     descripcion: '',
     precio: '',
-    cantidad: ''
+    stock: ''
   }); 
   
   const [newProduct, setNewProduct] = useState({
     nombre: '',
     descripcion: '',
     precio: '',
-    cantidad: ''
+    stock: ''
   });
 
+  const [fecha, setFecha] = useState('');
+
+  const fechaActual = () => {
+    const fechaActual = new Date();
+    const dia = fechaActual.getDate();
+    const mes = fechaActual.getMonth() + 1; // Los meses van de 0 a 11, por eso sumamos 1
+    const anio = fechaActual.getFullYear();
+    const horas = fechaActual.getHours().toString().padStart(2, '0');
+    const minutos = fechaActual.getMinutes().toString().padStart(2, '0');
+    const segundos = fechaActual.getSeconds().toString().padStart(2, '0');
+    const fechaFormateada = `${anio}/${mes}/${dia}${horas}:${minutos}:${segundos}`;
+    setFecha(fechaFormateada);
+  } 
+
     useEffect(() => {
-        getDataInit();
+      getDataInit();
+      fechaActual();
     }, []);
   
     useEffect(() => {
@@ -47,7 +63,7 @@ const useProductos = () => {
   const getDataInit = async () => {
     try {
       const response = await fetch('http://localhost:3001/productos');
-
+      console.log(response);
       // Verifica si la respuesta es correcta
       if (!response.ok) {
         throw new Error('Error al obtener productos: ' + response.statusText); // Manejo de errores si la respuesta no es correcta
@@ -88,7 +104,7 @@ const useProductos = () => {
       setRefreshData(!refreshData);
       const result = await response.json();
       setProducto([...producto, result]);
-      setNewProduct({ nombre: '', descripcion: '', precio: '', cantidad: '' }); 
+      setNewProduct({ nombre: '', descripcion: '', precio: '', stock: '' }); 
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error al agregar producto:', error);
@@ -103,7 +119,7 @@ const useProductos = () => {
       nombre: editProduct.nombre,
       descripcion: editProduct.descripcion,
       precio: editProduct.precio, 
-      cantidad: editProduct.cantidad
+      stock: editProduct.stock
     };
     try {
       const response = await fetch(`http://localhost:3001/productos/${editProduct.id}`, {
@@ -120,7 +136,7 @@ const useProductos = () => {
           nombre: '',
           descripcion: '',
           precio: '', 
-          cantidad: ''
+          stock: ''
         });
         alertUpdate();
         setRefreshData(!refreshData);

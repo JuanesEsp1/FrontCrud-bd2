@@ -22,7 +22,7 @@ const logicPage = () => {
         console.log(data);
         
         const payload = {
-            correo: data.correo,
+            usuario: data.usuario,
             password: data.password
         };
 

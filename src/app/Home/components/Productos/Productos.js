@@ -63,7 +63,7 @@ const Productos = () => {
               <th className="py-3 px-6">Nombre</th>
               <th className="py-3 px-6">Descripción</th>
               <th className="py-3 px-6">Precio</th>
-              <th className="py-3 px-6">Cantidad</th>
+              <th className="py-3 px-6">stock</th>
               <th className="py-3 px-6">Activo</th>
               <th className="py-3 px-6">Fecha de Creación</th>
               <th className="py-3 px-6">Acciones</th>
@@ -81,15 +81,15 @@ const Productos = () => {
                 <td className="py-3 px-6 text-left">{producto.nombre}</td>
                 <td className="py-3 px-6 text-left">{formatText(producto.descripcion)}</td>
                 <td className="py-3 px-6 text-left">{producto.precio}</td>
-                <td className="py-3 px-6 text-center">{producto.cantidad}</td>
+                <td className="py-3 px-6 text-center">{producto.stock}</td>
                 <td className="py-3 px-6 text-center">
-                  {producto.activo ? (
+                  {producto.estado == "activo" ? (
                     <span className="bg-[#99A5E0] text-white py-2 px-4 rounded-full text-md">
-                      Sí
+                      Activo
                     </span>
                   ) : (
-                    <span className="bg-red-200 text-red-700 py-1 px-3 rounded-full text-xs">
-                      No
+                    <span className="bg-red-200 text-red-700 py-2 px-4 rounded-full text-md">
+                      Inactivo
                     </span>
                   )}
                 </td>

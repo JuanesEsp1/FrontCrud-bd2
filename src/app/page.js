@@ -33,28 +33,24 @@ export default function Login() {
             <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-6"> {/* Usar handleFormSubmit */}
               <div className="mb-4 relative z-0">
                 <input 
-                  type="email" 
-                  id="correo" 
+                  type="text" 
+                  id="usuario" 
                   autoComplete="off"
                   className="block py-2.5 px-2 w-full text-lg text-white bg-transparent border-0 border-b-[1px] border-gray-300 appearance-none focus:outline-none focus:ring-0 peer" 
                   placeholder=" " 
-                  {...register("correo", {
-                    required: "El correo electrónico es requerido",
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: "Correo electrónico inválido",
-                    },
+                  {...register("usuario", {
+                    required: "El usuario es requerido",
                   })}
-                />
+                />  
                 <label 
-                  htmlFor="correo" 
+                  htmlFor="usuario" 
                   className="absolute text-lg text-white duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-8 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
                 >
-                  Correo electrónico
+                  Usuario
                 </label>
-                {errors.correo && (
+                {errors.usuario && (
                   <p className="text-red-500 text-xs mt-1">
-                    {errors.correo.message}
+                    {errors.usuario.message}
                   </p>
                 )}
               </div>
@@ -85,7 +81,7 @@ export default function Login() {
                     </svg>
                 }
                 <label 
-                  htmlFor="correo" 
+                  htmlFor="password" 
                   className="absolute text-lg text-white duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-8 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto"
                 >
                   Contraseña
