@@ -22,23 +22,22 @@ const useProductos = () => {
   
   const [newProduct, setNewProduct] = useState({
     nombre: '',
-    descripcion: '',
     precio: '',
-    stock: ''
+    stock: '',
+    descripcion: '',
+    estado: 'activo'
   });
 
   const [fecha, setFecha] = useState('');
 
-  const fechaActual = () => {
-    const fechaActual = new Date();
+  const fechaActual = (date) => {
+    const fechaActual = new Date(date);
     const dia = fechaActual.getDate();
     const mes = fechaActual.getMonth() + 1; // Los meses van de 0 a 11, por eso sumamos 1
     const anio = fechaActual.getFullYear();
-    const horas = fechaActual.getHours().toString().padStart(2, '0');
-    const minutos = fechaActual.getMinutes().toString().padStart(2, '0');
-    const segundos = fechaActual.getSeconds().toString().padStart(2, '0');
-    const fechaFormateada = `${anio}/${mes}/${dia}${horas}:${minutos}:${segundos}`;
-    setFecha(fechaFormateada);
+    const fechaFormateada = `${anio}/${mes}/${dia}`;
+    return fechaFormateada;
+    // setFecha(fechaFormateada);
   } 
 
     useEffect(() => {
@@ -70,6 +69,11 @@ const useProductos = () => {
       }
 
       const result = await response.json(); // Obtener el resultado en formato JSON
+      
+      result.forEach((item) => {
+         item.fecha = fechaActual(item.fecha)
+      })
+
       orderProductsById(result);
       console.log('Datos obtenidos:', result); // Imprimir los datos obtenidos
       return result; // Retornar la información de productos
@@ -87,7 +91,7 @@ const useProductos = () => {
   const handleAddProduct = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:3001/productos', {
+      const response = await fetch('http://localhost:3001/crear', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -104,7 +108,7 @@ const useProductos = () => {
       setRefreshData(!refreshData);
       const result = await response.json();
       setProducto([...producto, result]);
-      setNewProduct({ nombre: '', descripcion: '', precio: '', stock: '' }); 
+      setNewProduct({ nombre: '', descripcion: '', precio: '', stock: '', estado: 'activo' }); 
       setIsModalOpen(false);
     } catch (error) {
       console.error('Error al agregar producto:', error);
@@ -122,7 +126,7 @@ const useProductos = () => {
       stock: editProduct.stock
     };
     try {
-      const response = await fetch(`http://localhost:3001/productos/${editProduct.id}`, {
+      const response = await fetch(`http://localhost:3001/actualizar/${editProduct.id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
@@ -132,7 +136,6 @@ const useProductos = () => {
       if (response.ok) {
         setIsEditModalOpen(false);
         setEditProduct({
-          id: '',
           nombre: '',
           descripcion: '',
           precio: '', 
@@ -240,6 +243,22 @@ const useProductos = () => {
     });
   }
 
+  // paginador
+  // ... otros estados ...
+  const [paginaActual, setPaginaActual] = useState(1);
+  const productosPorPagina = 8; // Ajusta este número según necesites
+
+  // Calcular productos para la página actual
+  const indiceUltimo = paginaActual * productosPorPagina;
+  const indicePrimero = indiceUltimo - productosPorPagina;
+  const productosActuales = productosFiltrados.slice(indicePrimero, indiceUltimo);
+  const totalPaginas = Math.ceil(productosFiltrados.length / productosPorPagina);
+
+  const cambiarPagina = (numeroPagina) => {
+    setPaginaActual(numeroPagina);
+  };
+
+
 
 
 
@@ -261,7 +280,11 @@ const useProductos = () => {
       busqueda,
       setBusqueda,
       productosFiltrados,
-      alertDelete
+      alertDelete,
+      productosActuales,
+      paginaActual,
+      cambiarPagina,
+      totalPaginas
     }
 }
 

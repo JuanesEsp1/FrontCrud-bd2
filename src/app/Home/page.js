@@ -27,7 +27,7 @@ const Home = () => {
                             }
                         </div>
                     </div>
-                <div className="w-full h-full ">
+                <div className="w-full h-full overflow-y-auto">
                     {
                         isOpen === 1 ? <Clientes />
                             : isOpen === 2 ? <Inventario />

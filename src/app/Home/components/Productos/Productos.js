@@ -6,6 +6,7 @@ import { MdDelete } from "react-icons/md";
 import { MdAdd } from "react-icons/md";
 import Modal from "../../../components/modal/Modal"
 import { FiSearch } from "react-icons/fi";
+import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 
 
 const Productos = () => {
@@ -27,7 +28,11 @@ const Productos = () => {
     busqueda,
     setBusqueda,
     productosFiltrados,
-    alertDelete
+    alertDelete,
+    productosActuales,
+    paginaActual,
+    cambiarPagina,
+    totalPaginas
   } = useProductos();
 
 
@@ -55,7 +60,7 @@ const Productos = () => {
           />
         </div>
       </div>
-      <div className="min-w-full overflow-y-auto h-[70vh] shadow-lg mt-2 shadow-slate-300 rounded-lg">
+      <div className="min-w-full overflow-y-auto h-[60vh] shadow-lg mt-2 shadow-slate-300 rounded-lg">
         <table className="min-w-full table-auto bg-white  rounded-lg">
           <thead>
             <tr className="bg-gray-200 text-left text-gray-600 uppercase text-sm leading-normal">
@@ -70,7 +75,7 @@ const Productos = () => {
             </tr>
           </thead>
           <tbody className="text-gray-600 text-md  font-normal">
-            {productosFiltrados.map((producto) => (
+            {productosActuales.map((producto) => (
               <tr
                 key={producto.id}
                 className="border-b border-gray-200 hover:bg-gray-100"
@@ -94,7 +99,7 @@ const Productos = () => {
                   )}
                 </td>
                 <td className="py-3 px-6 text-center">
-                  {new Date(producto.fecha_creacion).toLocaleDateString()}
+                  {producto.fecha}
                 </td>
                 <td className="py-3 px-6 text-center flex justify-center gap-2">
                   <button
@@ -112,6 +117,69 @@ const Productos = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="w-full flex justify-end">
+        <div className="flex items-center gap-2 bg-white p-4 rounded-lg text-lg shadow">
+          <button
+            onClick={() => cambiarPagina(paginaActual - 1)}
+            disabled={paginaActual === 1}
+            className={`p-2 rounded-full ${paginaActual === 1
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-[#7F88D5] hover:bg-[#7F88D5] hover:text-white'
+              }`}
+          >
+            <IoIosArrowBack />
+          </button>
+
+          {(() => {
+            let paginas = [];
+            if (totalPaginas <= 5) {
+              // Si hay 5 o menos páginas, mostrar todas
+              paginas = [...Array(totalPaginas)].map((_, i) => i + 1);
+            } else {
+              // Si estamos en las primeras 3 páginas
+              if (paginaActual <= 3) {
+                paginas = [1, 2, 3, '...', totalPaginas];
+              }
+              // Si estamos en las últimas 3 páginas
+              else if (paginaActual >= totalPaginas - 2) {
+                paginas = [1, '...', totalPaginas - 2, totalPaginas - 1, totalPaginas];
+              }
+              // Si estamos en medio
+              else {
+                paginas = [1, '...', paginaActual, '...', totalPaginas];
+              }
+            }
+
+            return paginas.map((pagina, index) => (
+              pagina === '...' ? (
+                <span key={`dots-${index}`} className="px-2 text-gray-500">...</span>
+              ) : (
+                <button
+                  key={index}
+                  onClick={() => cambiarPagina(pagina)}
+                  className={`w-8 h-8 rounded-full ${paginaActual === pagina
+                      ? 'bg-[#7F88D5] text-white'
+                      : 'text-[#7F88D5] hover:bg-[#7F88D5] hover:text-white'
+                    }`}
+                >
+                  {pagina}
+                </button>
+              )
+            ));
+          })()}
+
+          <button
+            onClick={() => cambiarPagina(paginaActual + 1)}
+            disabled={paginaActual === totalPaginas}
+            className={`p-2 rounded-full ${paginaActual === totalPaginas
+                ? 'text-gray-400 cursor-not-allowed'
+                : 'text-[#7F88D5] hover:bg-[#7F88D5] hover:text-white'
+              }`}
+          >
+            <IoIosArrowForward />
+          </button>
+        </div>
       </div>
 
       {isEditModalOpen === true ? (
@@ -149,8 +217,8 @@ const Productos = () => {
             className="p-2 border border-gray-300 rounded-md outline-none"
             type="number"
             placeholder="Cantidad"
-            value={editProduct.cantidad}  
-            onChange={(e) => setEditProduct({ ...editProduct, cantidad: e.target.value })}
+            value={editProduct.stock}  
+            onChange={(e) => setEditProduct({ ...editProduct, stock: e.target.value })}
             required
           />
           <div className="flex justify-end gap-2"> 
@@ -206,8 +274,8 @@ const Productos = () => {
             className="p-2 border border-gray-300 rounded-md outline-none "
             type="number"
             placeholder="Cantidad"
-            value={newProduct.cantidad}
-            onChange={(e) => setNewProduct({ ...newProduct, cantidad: e.target.value })}
+            value={newProduct.stock}
+            onChange={(e) => setNewProduct({ ...newProduct, stock: e.target.value })}
             required
           />
           <div className="flex justify-end gap-2"> 
