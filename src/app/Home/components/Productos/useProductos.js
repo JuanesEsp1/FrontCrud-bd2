@@ -5,32 +5,17 @@ import Swal from 'sweetalert2'
 const useProductos = () => {
 
   const [producto, setProducto] = useState([]);
-    
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [refreshData, setRefreshData] = useState(false);
   const [busqueda, setBusqueda] = useState('');
-  const [productosFiltrados, setProductosFiltrados] = useState(producto);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [stockBajo, setStockBajo] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  const [editProduct, setEditProduct] = useState({
-    nombre: '',
-    precio: '',
-    stock: '',
-    categoria: '',
-    estado: '',
-    stockMinimo: ''
-  }); 
-  
-  const [newProduct, setNewProduct] = useState({
-    nombre: '',
-    precio: '',
-    stock: '',
-    categoria: '',
-    estado: 'activo',
-    stockMinimo: '5'
-  });
+  const [stockBajo, setStockBajo] = useState([]);
+  const [stateInput, setStateInput] = useState(true);
+  const [refreshData, setRefreshData] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [busquedaSelect, setBusquedaSelect] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [productosFiltrados, setProductosFiltrados] = useState(producto);
+  const [editProduct, setEditProduct] = useState({nombre: '', precio: '', stock: '', categoria: '', estado: '', stockMinimo: ''}); 
+  const [newProduct, setNewProduct] = useState({nombre: '',  precio: '', stock: '', categoria: '', estado: true, stockMinimo: '5'});
 
   const [categorias, setCategorias] = useState([
     {id: '1', nombre: 'Camisas y Blusas'},
@@ -42,8 +27,6 @@ const useProductos = () => {
     {id: '7', nombre: 'Ropa de Invierno'},
     {id: '8', nombre: 'Zapatos y Sandalias'}
   ]);
-
-  const [fecha, setFecha] = useState('');
 
   const fechaActual = (date) => {
     const fechaActual = new Date(date);
@@ -60,33 +43,32 @@ const useProductos = () => {
       fechaActual();
     }, []);
   
-  useEffect(() => {
-    
-    // producto.map(producto => {
-    //   console.log('producto----------------');
-
-    //   if (producto.stock < producto.stockMinimo) {
-    //     stockBajo.push(producto);
-    //   }
-    // });
-    
-    console.log('stockBajo', stockBajo);
-  }, []);
-  
     useEffect(() => {
       getDataInit();
     }, [refreshData]);
   
-
+  // filtrar productos por nombre
   useEffect(() => {
     const resultados = producto.filter(producto =>
-      producto.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      producto.categoria?.toLowerCase().includes(busqueda.toLowerCase())
+      producto.nombre?.toLowerCase().includes(busqueda.toLowerCase())
     );
     setProductosFiltrados(resultados);
   }, [busqueda, producto]);
 
+  // filtrar productos por categoria
+  useEffect(() => {
+    if(busquedaSelect.length > 0){
+      setStateInput(false);
+    }
+    const resultados = producto.filter(producto =>
+      producto.categoria?.toLowerCase().includes(busquedaSelect.toLowerCase())
+    );
+    setProductosFiltrados(resultados);
+  }, [busquedaSelect,producto]);
 
+
+
+  // obtener productos
   const getDataInit = async () => {
     try {
       const response = await fetch('http://localhost:3001/productos');
@@ -102,7 +84,7 @@ const useProductos = () => {
       })
 
       orderProductsById(result);
-      
+      console.log('result', result);
       return result; // Retornar la información de productos
     } catch (error) {
       console.error('Error:', error.message); // Loguear el error
@@ -110,6 +92,7 @@ const useProductos = () => {
     }
   };
 
+  // ordenar productos por id
   const orderProductsById = (products) => {
     const productsOrder = products.sort((a, b) => a.id - b.id);
     productosBajoStock(productsOrder);
@@ -126,11 +109,12 @@ const useProductos = () => {
     });
   }
 
+  // agregar producto
   const handleAddProduct = async (e) => {
     e.preventDefault();
 
     if(newProduct.stock < 1){
-      newProduct.estado = 'inactivo';
+      newProduct.estado = false;
     }
 
     try {
@@ -159,11 +143,12 @@ const useProductos = () => {
   };  
 
 
+  // actualizar producto
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
   
     if(editProduct.stock < 1){
-      editProduct.estado = 'inactivo';
+      editProduct.estado = false;
     }
 
     const updatedProduct = {
@@ -205,6 +190,7 @@ const useProductos = () => {
     } 
   }
 
+  // eliminar producto
   const handleDeleteProduct = async (id) => {
     try {
       const response = await fetch(`http://localhost:3001/eliminar/${id}`, {
@@ -223,7 +209,7 @@ const useProductos = () => {
     }
   } 
 
-  
+  // editar producto
   const handleEditProduct = (id) => {
     setIsEditModalOpen(true);
     const product = producto.find(producto => producto.id === id);
@@ -231,7 +217,7 @@ const useProductos = () => {
   } 
 
 
-    
+  // formatear texto
  const formatText = (text) => {
       if (text == null) {
         return text;
@@ -316,15 +302,12 @@ const useProductos = () => {
 
 
     return {
-      producto,
-      formatText,
       handleAddProduct,
       isModalOpen,
       setIsModalOpen,
       newProduct,
       setNewProduct,
       handleUpdateProduct,
-      handleDeleteProduct,
       handleEditProduct,
       isEditModalOpen,
       setIsEditModalOpen,
@@ -332,7 +315,6 @@ const useProductos = () => {
       setEditProduct,
       busqueda,
       setBusqueda,
-      productosFiltrados,
       alertDelete,
       productosActuales,
       paginaActual,
@@ -340,6 +322,8 @@ const useProductos = () => {
       totalPaginas,
       categorias,
       stockBajo,
+      busquedaSelect,
+      setBusquedaSelect
     }
 }
 

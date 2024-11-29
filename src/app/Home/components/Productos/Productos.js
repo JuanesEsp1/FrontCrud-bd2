@@ -11,15 +11,12 @@ import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 
 const Productos = () => {
   const {
-    producto,
-    formatText,
     handleAddProduct,
     isModalOpen,
     setIsModalOpen,
     newProduct,
     setNewProduct,
     handleUpdateProduct,
-    handleDeleteProduct,
     handleEditProduct,
     isEditModalOpen,
     setIsEditModalOpen,
@@ -27,7 +24,6 @@ const Productos = () => {
     setEditProduct,
     busqueda,
     setBusqueda,
-    productosFiltrados,
     alertDelete,
     productosActuales,
     paginaActual,
@@ -35,6 +31,8 @@ const Productos = () => {
     totalPaginas,
     categorias,
     stockBajo,
+    busquedaSelect,
+    setBusquedaSelect
   } = useProductos();
 
 
@@ -70,15 +68,32 @@ const Productos = () => {
             </button>
           </div>
         </div>
-        <div className="relative flex flex-row gap-2 items-center">
-          <FiSearch className="absolute left-2 text-2xl text-gray-500"/>
-          <input
-            className="p-2 pl-10 pr-4 border-[1.5px] border-gray-300 rounded-2xl outline-none"
-            type="text"
-            placeholder="Buscar producto..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
+        <div className="flex flex-row gap-2 items-center">
+          <div>
+            <select
+              value={busquedaSelect}
+              onChange={(e) => {
+                setBusquedaSelect(e.target.value);
+              }}
+              className="p-2 border border-gray-300 rounded-md outline-none">
+              <option disabled value="">Categorias</option>
+              <option value="">ninguna</option>
+              {categorias.map((categoria, index) => (
+                <option key={index} value={categoria.id}>{categoria.nombre}</option>
+              ))}
+            </select>
+          </div>
+          <div className="relative flex flex-row gap-2 items-center">
+            <FiSearch className="absolute left-2 text-2xl text-gray-500"/>
+            <input
+              disabled={busquedaSelect.length > 0 ? true : false}
+              className={`${busquedaSelect.length > 0 ? 'cursor-not-allowed bg-gray-200' : ''} p-2 pl-10 pr-4 border-[1.5px] border-gray-300 rounded-2xl outline-none`}
+              type="text"
+              placeholder="Buscar producto..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+            />
+          </div>
         </div>
       </div>
       <div className="min-w-full overflow-y-auto h-[60vh] shadow-lg mt-2 shadow-slate-300 rounded-lg">
@@ -114,7 +129,7 @@ const Productos = () => {
                 <td className="py-3 px-6 text-left">{producto.precio}</td>
                 <td className="py-3 px-6 text-center">{producto.stock}</td>
                 <td className="py-3 px-6 text-center">
-                  {producto.estado == "activo" ? (
+                  {producto.estado === 'true' ? (
                     <span className="bg-[#99A5E0] text-white py-2 px-4 rounded-full text-md">
                       Activo
                     </span>
@@ -259,8 +274,8 @@ const Productos = () => {
             onChange={(e) => setEditProduct({ ...editProduct, estado: e.target.value })}
             required
           >
-            <option value="activo">Activo</option>
-            <option value="inactivo">Inactivo</option>
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
           </select>
           <input
             className="p-2 border border-gray-300 rounded-md outline-none"
