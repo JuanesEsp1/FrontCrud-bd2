@@ -11,22 +11,37 @@ const useProductos = () => {
   const [busqueda, setBusqueda] = useState('');
   const [productosFiltrados, setProductosFiltrados] = useState(producto);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [stockBajo, setStockBajo] = useState([]);
+  const [loading, setLoading] = useState(true);
   
   const [editProduct, setEditProduct] = useState({
-    id: '',
     nombre: '',
-    descripcion: '',
     precio: '',
-    stock: ''
+    stock: '',
+    categoria: '',
+    estado: '',
+    stockMinimo: ''
   }); 
   
   const [newProduct, setNewProduct] = useState({
     nombre: '',
     precio: '',
     stock: '',
-    descripcion: '',
-    estado: 'activo'
+    categoria: '',
+    estado: 'activo',
+    stockMinimo: '5'
   });
+
+  const [categorias, setCategorias] = useState([
+    {id: '1', nombre: 'Camisas y Blusas'},
+    {id: '2', nombre: 'Pantalones y Jeans'},
+    {id: '3', nombre: 'Vestidos y Faldas'},
+    {id: '4', nombre: 'Ropa Deportiva'},
+    {id: '5', nombre: 'Ropa Interior'},
+    {id: '6', nombre: 'Ropa de Niños'},
+    {id: '7', nombre: 'Ropa de Invierno'},
+    {id: '8', nombre: 'Zapatos y Sandalias'}
+  ]);
 
   const [fecha, setFecha] = useState('');
 
@@ -45,6 +60,19 @@ const useProductos = () => {
       fechaActual();
     }, []);
   
+  useEffect(() => {
+    
+    // producto.map(producto => {
+    //   console.log('producto----------------');
+
+    //   if (producto.stock < producto.stockMinimo) {
+    //     stockBajo.push(producto);
+    //   }
+    // });
+    
+    console.log('stockBajo', stockBajo);
+  }, []);
+  
     useEffect(() => {
       getDataInit();
     }, [refreshData]);
@@ -53,7 +81,7 @@ const useProductos = () => {
   useEffect(() => {
     const resultados = producto.filter(producto =>
       producto.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      producto.descripcion?.toLowerCase().includes(busqueda.toLowerCase())
+      producto.categoria?.toLowerCase().includes(busqueda.toLowerCase())
     );
     setProductosFiltrados(resultados);
   }, [busqueda, producto]);
@@ -62,7 +90,6 @@ const useProductos = () => {
   const getDataInit = async () => {
     try {
       const response = await fetch('http://localhost:3001/productos');
-      console.log(response);
       // Verifica si la respuesta es correcta
       if (!response.ok) {
         throw new Error('Error al obtener productos: ' + response.statusText); // Manejo de errores si la respuesta no es correcta
@@ -75,7 +102,7 @@ const useProductos = () => {
       })
 
       orderProductsById(result);
-      console.log('Datos obtenidos:', result); // Imprimir los datos obtenidos
+      
       return result; // Retornar la información de productos
     } catch (error) {
       console.error('Error:', error.message); // Loguear el error
@@ -85,11 +112,27 @@ const useProductos = () => {
 
   const orderProductsById = (products) => {
     const productsOrder = products.sort((a, b) => a.id - b.id);
+    productosBajoStock(productsOrder);
     setProducto(productsOrder);
+    setLoading(!loading);
+  }
+
+  const productosBajoStock = (productsOrder) => {
+    stockBajo.length = 0;
+    productsOrder.map(producto => {
+      if (producto.stock < producto.stockMinimo) {
+        stockBajo.push(producto);
+      }
+    });
   }
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
+
+    if(newProduct.stock < 1){
+      newProduct.estado = 'inactivo';
+    }
+
     try {
       const response = await fetch('http://localhost:3001/crear', {
         method: 'POST',
@@ -105,11 +148,11 @@ const useProductos = () => {
       }
 
       alertCreate();
-      setRefreshData(!refreshData);
       const result = await response.json();
       setProducto([...producto, result]);
-      setNewProduct({ nombre: '', descripcion: '', precio: '', stock: '', estado: 'activo' }); 
+      setNewProduct({ nombre: '', categoria: '', precio: '', stock: '', estado: 'activo', stockMinimo: '5' }); 
       setIsModalOpen(false);
+      setRefreshData(!refreshData);
     } catch (error) {
       console.error('Error al agregar producto:', error);
     }
@@ -118,13 +161,21 @@ const useProductos = () => {
 
   const handleUpdateProduct = async (e) => {
     e.preventDefault();
+  
+    if(editProduct.stock < 1){
+      editProduct.estado = 'inactivo';
+    }
+
     const updatedProduct = {
-      id: editProduct.id,
       nombre: editProduct.nombre,
-      descripcion: editProduct.descripcion,
       precio: editProduct.precio, 
-      stock: editProduct.stock
+      stock: editProduct.stock,
+      categoria: editProduct.categoria,
+      estado: editProduct.estado,
+      stockMinimo: editProduct.stockMinimo
     };
+
+
     try {
       const response = await fetch(`http://localhost:3001/actualizar/${editProduct.id}`, {
         method: 'PUT',
@@ -137,9 +188,11 @@ const useProductos = () => {
         setIsEditModalOpen(false);
         setEditProduct({
           nombre: '',
-          descripcion: '',
           precio: '', 
-          stock: ''
+          stock: '',
+          categoria: '',
+          estado: '',
+          stockMinimo: ''
         });
         alertUpdate();
         setRefreshData(!refreshData);
@@ -154,7 +207,7 @@ const useProductos = () => {
 
   const handleDeleteProduct = async (id) => {
     try {
-      const response = await fetch(`http://localhost:3001/productos/${id}`, {
+      const response = await fetch(`http://localhost:3001/eliminar/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -162,7 +215,6 @@ const useProductos = () => {
       });
       if (response.ok) {  
         setRefreshData(!refreshData);
-        console.log('Producto eliminado correctamente');
       } else {
         console.error('Error al eliminar el producto');
       }
@@ -178,13 +230,14 @@ const useProductos = () => {
     setEditProduct(product);
   } 
 
+
     
  const formatText = (text) => {
       if (text == null) {
         return text;
       }
-      if (text.length > 30) {
-        return text.slice(0, 30) + '...';
+      if (text.length > 20) {
+        return text.slice(0, 20) + '...';
       }
       return text;
   };
@@ -246,7 +299,7 @@ const useProductos = () => {
   // paginador
   // ... otros estados ...
   const [paginaActual, setPaginaActual] = useState(1);
-  const productosPorPagina = 8; // Ajusta este número según necesites
+  const productosPorPagina = 6; // Ajusta este número según necesites
 
   // Calcular productos para la página actual
   const indiceUltimo = paginaActual * productosPorPagina;
@@ -284,7 +337,9 @@ const useProductos = () => {
       productosActuales,
       paginaActual,
       cambiarPagina,
-      totalPaginas
+      totalPaginas,
+      categorias,
+      stockBajo,
     }
 }
 

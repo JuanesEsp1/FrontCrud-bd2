@@ -32,12 +32,33 @@ const Productos = () => {
     productosActuales,
     paginaActual,
     cambiarPagina,
-    totalPaginas
+    totalPaginas,
+    categorias,
+    stockBajo,
   } = useProductos();
 
 
   return (
     <div className="container mx-auto pt-6 flex flex-col gap-4">
+      {stockBajo.length > 0 && (
+      <div className="rounded-md bg-yellow-50 p-4">
+        <div className="flex">
+          <div className="shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-8 text-yellow-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+            </svg>
+          </div>
+          <div className="ml-3">
+              <h3 className="text-xl font-medium text-yellow-800">Stock bajo en {stockBajo.length} productos</h3>
+            <div className="mt-2 text-lg text-yellow-700">
+              <p>
+                Algunos productos tienen un stock bajo. Te recomendamos revisar los niveles de inventario para evitar rupturas de stock y garantizar la disponibilidad para tus clientes. 🛒
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+      )}
       <div className="w-full flex flex-row gap-2 items-center">
         <div className="w-full flex flex-row justify-between gap-2 items-center">
           <div className="text-2xl font-bold flex flex-row gap-2 items-center mb-2">
@@ -66,10 +87,11 @@ const Productos = () => {
             <tr className="bg-gray-200 text-left text-gray-600 uppercase text-sm leading-normal">
               <th className="py-3 px-6">ID</th>
               <th className="py-3 px-6">Nombre</th>
-              <th className="py-3 px-6">Descripción</th>
+              <th className="py-3 px-6">Categoría</th>
               <th className="py-3 px-6">Precio</th>
               <th className="py-3 px-6">stock</th>
               <th className="py-3 px-6">Activo</th>
+              <th className="py-3 px-6">Stock minimo</th>
               <th className="py-3 px-6">Fecha de Creación</th>
               <th className="py-3 px-6">Acciones</th>
             </tr>
@@ -78,13 +100,17 @@ const Productos = () => {
             {productosActuales.map((producto) => (
               <tr
                 key={producto.id}
-                className="border-b border-gray-200 hover:bg-gray-100"
+                className={`border-b border-gray-200 hover:bg-gray-100 ${producto.stock < producto.stockMinimo ? 'bg-red-100 hover:bg-red-200' : ''} `}
               >
                 <td className="py-3 px-6 text-left whitespace-nowrap">
                   {producto.id}
                 </td>
                 <td className="py-3 px-6 text-left">{producto.nombre}</td>
-                <td className="py-3 px-6 text-left">{formatText(producto.descripcion)}</td>
+                <td className="py-3 px-6 text-left">{
+                  categorias.map((categoria) => (
+                    categoria.id === producto.categoria ? categoria.nombre : ''
+                  ))
+                }</td>
                 <td className="py-3 px-6 text-left">{producto.precio}</td>
                 <td className="py-3 px-6 text-center">{producto.stock}</td>
                 <td className="py-3 px-6 text-center">
@@ -99,6 +125,9 @@ const Productos = () => {
                   )}
                 </td>
                 <td className="py-3 px-6 text-center">
+                  {producto.stockMinimo}
+                </td>
+                <td className="py-3 px-6 text-center">
                   {producto.fecha}
                 </td>
                 <td className="py-3 px-6 text-center flex justify-center gap-2">
@@ -108,7 +137,7 @@ const Productos = () => {
                     <MdEdit />
                   </button>
                   <button
-                    onClick={() => alertDelete(producto.id, producto.nombre)}
+                    onClick={() => alertDelete(producto.id)}
                     className="bg-red-500 text-lg hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full">
                     <MdDelete />
                   </button>
@@ -197,14 +226,17 @@ const Productos = () => {
             onChange={(e) => setEditProduct({ ...editProduct, nombre: e.target.value })}
             required
           />
-          <input
+          <select
             className="p-2 border border-gray-300 rounded-md outline-none"
-            type="text"
-            placeholder="Descripción"
-            value={editProduct.descripcion} 
-            onChange={(e) => setEditProduct({ ...editProduct, descripcion: e.target.value })}
+            value={editProduct.categoria}
+            onChange={(e) => setEditProduct({ ...editProduct, categoria: e.target.value })}
             required
-          />
+          >
+            <option disabled value="">Selecciona una categoría</option>
+            {categorias.map((categoria, index) => (
+              <option key={index} value={categoria.id}>{categoria.nombre}</option>
+            ))}
+          </select>
           <input
             className="p-2 border border-gray-300 rounded-md outline-none"
             type="number"
@@ -219,6 +251,23 @@ const Productos = () => {
             placeholder="Cantidad"
             value={editProduct.stock}  
             onChange={(e) => setEditProduct({ ...editProduct, stock: e.target.value })}
+            required
+            />
+          <select
+            className="p-2 border border-gray-300 rounded-md outline-none"
+            value={editProduct.estado}
+            onChange={(e) => setEditProduct({ ...editProduct, estado: e.target.value })}
+            required
+          >
+            <option value="activo">Activo</option>
+            <option value="inactivo">Inactivo</option>
+          </select>
+          <input
+            className="p-2 border border-gray-300 rounded-md outline-none"
+            type="number"
+            placeholder="Stock minimo"
+            value={editProduct.stockMinimo}  
+            onChange={(e) => setEditProduct({ ...editProduct, stockMinimo: e.target.value })}
             required
           />
           <div className="flex justify-end gap-2"> 
@@ -254,14 +303,17 @@ const Productos = () => {
             value={newProduct.nombre}
             onChange={(e) => setNewProduct({ ...newProduct, nombre: e.target.value })} required
           />
-          <input
+          <select
             className="p-2 border border-gray-300 rounded-md outline-none"
-            type="text"
-            placeholder="Descripción"
-            value={newProduct.descripcion}
-            onChange={(e) => setNewProduct({ ...newProduct, descripcion: e.target.value })}
+            value={newProduct.categoria}
+            onChange={(e) => setNewProduct({ ...newProduct, categoria: e.target.value })}
             required
-          />
+          >
+            <option disabled value="">Selecciona una categoría</option>
+            {categorias.map((categoria, index) => (
+              <option key={index} value={categoria.id}>{categoria.nombre}</option>
+            ))}
+          </select>
           <input
             className="p-2 border border-gray-300 rounded-md outline-none"
             type="number"
