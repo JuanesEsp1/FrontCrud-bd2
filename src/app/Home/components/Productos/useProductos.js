@@ -134,7 +134,7 @@ const useProductos = () => {
       alertCreate();
       const result = await response.json();
       setProducto([...producto, result]);
-      setNewProduct({ nombre: '', categoria: '', precio: '', stock: '', estado: 'activo', stockMinimo: '5' }); 
+      setNewProduct({ nombre: '', categoria: '', precio: '', stock: '', estado: true, stockMinimo: '5' }); 
       setIsModalOpen(false);
       setRefreshData(!refreshData);
     } catch (error) {
